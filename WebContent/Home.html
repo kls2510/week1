@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Welcome</title>
+	
+	<script lang="text/javascript" src="webjars/jquery/2.1.1/jquery.js"></script>
+	<script type = "text/javascript">
+	
+	function saveName() {
+		NAME = $("#txtNAME").val();
+		var UNIQUEID;
+		$.ajax({
+			type: "POST",
+			url: "/JAXRS-RESTEasy/rest/nameStore/" + NAME,
+			data: {name : NAME},
+			success: function(data) {
+				UNIQUEID = data.id;
+				
+					alert("you are now user " + UNIQUEID + " with user name " + NAME);
+					$(location).attr('href',"Blackjack.html");
+				
+			},
+			dataType: "json"
+		});
+	}
+	
+	</script>
+	
+	
+	
+</head>
+<body>
+	<div style="text-align:center"><font color='purple' face='Impact' size='30'>Welcome!</font></div>
+	<br>
+	<font color='red' face='Arial' size='5'>Would you like to play a game of blackjack? 
+	If so then type in your username below and start playing!</font>
+	
+	<br>
+	<br>
+	<!--  -->
+	
+	<div style="text-align:center"> <font color='blue' face='Arial' size='5'>
+		UserName: <INPUT type="text" name="name" size="35" id="txtNAME"><BR>
+		<INPUT type="submit" onclick="saveName()" value="Play!">
+	</font></div>
+</body>
+</html>
