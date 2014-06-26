@@ -37,7 +37,7 @@ var Deck = function() {
 		CardSelect = Math.floor(Math.random()*deck.length);
 		var ranSuit = deck[CardSelect][0];
 		var ranNumber = deck[CardSelect][1];
-		deck.splice[CardSelect,1];
+		deck.splice(CardSelect,1);
 		return new Card(ranSuit, ranNumber);
 	};
 	

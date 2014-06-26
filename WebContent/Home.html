@@ -7,19 +7,65 @@
 	<script lang="text/javascript" src="webjars/jquery/2.1.1/jquery.js"></script>
 	<script type = "text/javascript">
 	
-	function saveName() {
-		NAME = $("#txtNAME").val();
-		var UNIQUEID;
+	$(document).ready(function()
+			{
+				$('#playerCount').text("number of current players: refreshing...");
+				setInterval(function() {
+					$.ajax({
+						type: "POST",
+						url: "/JAXRS-RESTEasy/rest/userno",
+						success: function(data) {
+							update(data.playerNo);
+						},
+						dataType: "json"
+					});		
+					
+				}, 5000);})
+	
+	function update(playerNo){
+        $('#playerCount').text("number of current players: " + playerNo);
+	}
+	
+	function saveAccount() {
+		var NAME = $("#txtNAME").val();
+		var PASSWORD = $("#txtPASSWORD").val();
 		$.ajax({
 			type: "POST",
-			url: "/JAXRS-RESTEasy/rest/nameStore/" + NAME,
-			data: {name : NAME},
+			url: "/JAXRS-RESTEasy/rest/nameStore/" + "name=" + NAME + "&password=" + PASSWORD,
+			data: {"name" : NAME, "password" : PASSWORD},
 			success: function(data) {
-				UNIQUEID = data.id;
-				
-					alert("you are now user " + UNIQUEID + " with user name " + NAME);
+				Name = data.name;
+				alert("you have created a new account with user name " + Name + ". You can now login");
+			},
+			error: function() {
+					alert("Error: Sorry, someone already has that username, please try again");
+				},
+			dataType: "json"
+		});
+	}
+	
+	function login() {
+		NAME = $("#txtNAME").val();
+		PASSWORD = $("#txtPASSWORD").val();
+		
+		$.ajax({
+			type: "POST",
+			url: "/JAXRS-RESTEasy/rest/nameStore/login/" + "name=" + NAME + "&password=" + PASSWORD,
+			data: {name : NAME, password : PASSWORD},
+			success: function(data) {
+				if (data.errMessage != undefined){
+					alert("Error: " + data.errMessage);
+				}
+				else {
+					Name = data.name;
+					alert("you successfully logged in as " + Name);
 					$(location).attr('href',"Blackjack.html");
-				
+				}
+			},
+			 statusCode: {
+				 500: function(data) {
+				 alert(data.message);
+				 }
 			},
 			dataType: "json"
 		});
@@ -33,16 +79,22 @@
 <body>
 	<div style="text-align:center"><font color='purple' face='Impact' size='30'>Welcome!</font></div>
 	<br>
-	<font color='red' face='Arial' size='5'>Would you like to play a game of blackjack? 
-	If so then type in your username below and start playing!</font>
+	<div style="text-align:center">
+	<font color='red' face='Arial' size='5'>Would you like to play a game of blackjack?
+	If so then login below with your current account, or create <br> a new one if you don't have one: </font>
+	</div>
+	<br>
+	<br>
 	
-	<br>
-	<br>
-	<!--  -->
 	
 	<div style="text-align:center"> <font color='blue' face='Arial' size='5'>
-		UserName: <INPUT type="text" name="name" size="35" id="txtNAME"><BR>
-		<INPUT type="submit" onclick="saveName()" value="Play!">
+		UserName: <INPUT type="text" name="name" size="40" id="txtNAME"><br>
+		Password: <INPUT type="text" name="password" size="40" id="txtPASSWORD"><br>
+		<INPUT type="submit" onclick="saveAccount()" value="Create new account">
+		<INPUT type="submit" onclick="login()" value="Login">
 	</font></div>
+	<br>
+	
+	<div id="playerCount" style="text-align:center"></div>
 </body>
 </html>
