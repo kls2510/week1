@@ -45,6 +45,7 @@
 	}
 	
 	function login() {
+		
 		NAME = $("#txtNAME").val();
 		PASSWORD = $("#txtPASSWORD").val();
 		
@@ -57,9 +58,15 @@
 					alert("Error: " + data.errMessage);
 				}
 				else {
-					Name = data.name;
-					alert("you successfully logged in as " + Name);
-					$(location).attr('href',"Blackjack.html");
+					if(!navigator.cookieEnabled){
+						alert("This game requires the use of cookies, please enable them if you would like to play");
+					}
+					else {
+						Name = data.name;
+						document.cookie = "sessionName=" + Name;
+						alert("you successfully logged in as " + Name);
+						$(location).attr('href',"Blackjack.html");
+					}
 				}
 			},
 			 statusCode: {

@@ -11,11 +11,107 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
+import com.javacodegeeks.enterprise.rest.resteasy.Blackjack;
+import com.javacodegeeks.enterprise.rest.resteasy.GameSpace;
 
 @Path("/")
 public class UserAPI {
 	static HashMap<String,User> userLookup= new HashMap<String,User>();
+	static HashMap<String,GameSpace> gameLookup = new HashMap<String,GameSpace>();
 	static ServerData serverData = new ServerData();
+	
+	@POST
+	@Path("playBlackjack/stick")
+	@Produces("application/json")
+	public Response stick(String name) {
+		int length = name.length();
+		int nameStart = 9;
+		String nameS = "";
+		char[] ca = name.toCharArray();
+		for(int i = nameStart; i<length; i++){
+			nameS += ca[i];
+		}
+		for (Entry<String, GameSpace> entry : gameLookup.entrySet())
+		{
+		    if(name.equals(entry.getKey())){
+		    	GameSpace g = entry.getValue();
+		    	g.makeOutcome();
+		    	String outcome = g.getOutcomeSingle();
+		    	gameLookup.remove(name);
+		    	User u = userLookup.get(nameS);
+		    	u.addStat(outcome);
+		    	return Response.status(200).entity(g).build();
+		    }
+		}
+		ErrorMessage e = new ErrorMessage("Your game no longer exists");
+    	return Response.status(200).entity(e).build();
+	}
+	
+	@POST
+	@Path("playBlackjack/stats")
+	@Produces("application/json")
+	public Response stats(String name) {
+		int length = name.length();
+		int nameStart = 9;
+		String nameS = "";
+		char[] ca = name.toCharArray();
+		for(int i = nameStart; i<length; i++){
+			nameS += ca[i];
+		}
+		for (Entry<String, User> entry : userLookup.entrySet())
+		{
+		    if(nameS.equals(entry.getKey())){
+		    	return Response.status(200).entity(entry.getValue()).build();
+		    }
+		}
+		ErrorMessage e = new ErrorMessage("This account does not exist");
+    	return Response.status(200).entity(e).build();
+	}
+	
+	@POST
+	@Path("playBlackjack/logout")
+	@Produces("application/json")
+	public void logout(String name) {
+		int length = name.length();
+		int nameStart = 9;
+		String nameS = "";
+		char[] ca = name.toCharArray();
+		for(int i = nameStart; i<length; i++){
+			nameS += ca[i];
+		}
+		for (Entry<String, User> entry : userLookup.entrySet())
+		{
+		    if(nameS.equals(entry.getKey())){
+		    	User u = entry.getValue();
+		    	u.logout();
+		    }
+		}
+	}
+	
+	@POST
+	@Path("playBlackjack")
+	@Produces("application/json")
+	public Response playBlackjack(String name) {
+		for (Entry<String, GameSpace> entry : gameLookup.entrySet())
+		{
+		    if(name.equals(entry.getKey())){
+		    	ErrorMessage e = new ErrorMessage("You are already connected to a game");
+		    	return Response.status(200).entity(e).build();
+		    }
+		}
+		GameSpace g = Blackjack.init(name);
+		gameLookup.put(name, g);	
+		return Response.status(200).entity(g).build();
+	}
+	
+	@POST
+	@Path("playBlackjack/hit")
+	@Produces("application/json")
+	public Response blackjackHit(String name) {
+		GameSpace game = gameLookup.get(name);
+		game.addCard();
+		return Response.status(200).entity(game).build();
+	}
 	
 	@POST
 	@Path("userno")

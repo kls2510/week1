@@ -5,6 +5,21 @@ public class User {
 	private String mode;
 	private String password;
 	private String status;
+	private int wins=0;
+	private int losses=0;
+	private int draws=0;
+	
+	public void addStat(String outcome){
+		if(outcome.equals("win")){
+			this.wins++;
+		}
+		else if(outcome.equals("loss")){
+			this.losses++;
+		}
+		else{
+			this.draws++;
+		}
+	}
 	
 	public User(String name, String pw) {
 	        this.name = name;
@@ -31,4 +46,14 @@ public class User {
 	public String getPassword() {
 		return this.password;
 	}	
+	
+	public int getWins() {
+		return this.wins;
+	}
+	public int getLosses() {
+		return this.losses;
+	}
+	public int getDraws() {
+		return this.draws;
+	}
 }

@@ -6,36 +6,173 @@
 <script src="webjars/jquery/2.1.1/jquery.js"></script>
 
 <script type="text/javascript">
-/* $.ajax({
-	url: "rest/Blackjack",
-	data: cookie // TODO:
-	success: function(data){
-		Blackjack.init(data.getName());
-	},
-	dataType: "text"
-}); */
+var sessionName = "";
+var prevScore;
+var handSize;
+
+$( document ).ready(function() {
+	var cookie = document.cookie;
+    sessionName = (cookie.split('='))[1];
+    $("#title").text("Hello " + sessionName);
+    getStats();
+    $("#inGame").hide();
+    $("#intro").show();
+});
+
+function getStats() {
+	 $.ajax({
+			type: "POST",
+			url: "rest/playBlackjack/stats",
+			data: {username : sessionName},
+			success: function(data){
+				if(data.errMessage != undefined) {
+					alert(" Error: " + data.errMessage);
+				}
+				else {
+				printStats(data.wins,data.draws,data.losses);
+				}
+			},
+			dataType: "json"
+		});
+}
+
+function printStats(w,d,l){
+	$("#stats").text("Your stats: Wins = " + w + "   Losses = " + l + "   Draws = " + d);
+}
+
+function hitMe() {
+	 $.ajax({
+			type: "POST",
+			url: "rest/playBlackjack/hit",
+			data: {username : sessionName},
+			success: function(data){
+				if(prevScore < 21 && handSize < 5){
+					printStatus(data.returnHand,data.userScore);
+					prevScore = data.userScore;
+					handSize += 1;
+				}
+				else {
+					alert("You can only stick, your score is already 21 or more, or you already have 5 cards!");
+					stick();
+				}
+			},
+			dataType: "json"
+		});
+}
+
+function printStatus(hand,score){
+	$("#gameInfo").text("You currently have: " + hand + " for a total score of " + score)
+}
+
+function playGame(){
+	 $.ajax({
+		type: "POST",
+		url: "rest/playBlackjack",
+		data: {username : sessionName},
+		success: function(data){
+			if(data.errMessage != undefined) {
+				alert(" Error: " + data.errMessage);
+			}
+			else {
+				prevScore = data.userScore;
+				handSize = 2;
+				$("#gameInfo").text("You currently have: " + data.returnHand + " for a total score of " + data.userScore);
+				$("#intro").hide();
+				$("#inGame").show();
+				$("#gameInfo").show();
+				$("#gameButtons").show();
+				$("#afterButtons").hide();
+				$("#gameInfo2").hide();
+			}
+		},
+		dataType: "json"
+	});
+}
+
+function stick(){
+	 $.ajax({
+		type: "POST",
+		url: "rest/playBlackjack/stick",
+		data: {username : sessionName},
+		success: function(data){
+			if(data.errMessage != undefined) {
+				alert(" Error: " + data.errMessage);
+			}
+			else {
+				$("#gameInfo2").show();
+				$("#gameInfo2").text(data.outcome);
+				$("#gameButtons").hide();
+				$("#afterButtons").show();
+			}
+		},
+		dataType: "json"
+	});
+}
+
+function logout(){
+	 $.ajax({
+		type: "POST",
+		url: "rest/playBlackjack/logout",
+		data: {username : sessionName},
+		success: function(){
+			$(location).attr('href',"Home.html");
+		},
+		dataType: "json"
+	});
+}
+
+function goBack() {
+	 getStats();
+	 $("#inGame").hide();
+	 $("#intro").show();
+	 $("#gameInfo2").hide();
+}
 </script>
 </head>
 <body>
-	<div style="text-align:center"><font color='purple' face='Impact' size='20'>Time to Play</font></div>
+	<div style="text-align:center;color:purple;font-family:impact;font-size:50px" id="title"></div>
 	<br>
-	<font color='red' face='Arial' size='12'>Good Luck - remember you want to score closest to 21! </font>
-
+	<div id="intro">
+	<div style="text-align:center;color:red;font-family:arial;font-size:30px" id="stats"></div>
 	<br>
 	<br>
-
-	<div style="text-align:center"> <font color='black' face='Arial' size='12'>
-		<script type="text/javascript" src="Blackjack.js"></script>
-	</font></div>
 	
-	<div style="text-align:center">
-	<form action="Blackjack.html">
-		<INPUT type="submit" value="Play Again!">
-	</form>
-	<form action="Home.html">
-		<INPUT type="submit" value="Back to Home">
-	</form>
+	<div style="text-align:center"> 
+		<INPUT type="submit" onclick="playGame()" value="Play!">
+		<br>
+		<br>
+		<INPUT type="submit" value="Logout" onclick="logout()">
 	</div>
+	</div>
+	
+	<div style="text-align:center" id = "inGame"> 
+		<div style="text-align:center;color:blue;font-family:arial;font-size:30px" id="gameInfo"></div>
+	
+		<br>
+	
+		<div style="text-align:center;color:blue;font-family:arial;font-size:30px" id="gameInfo2"></div>
+	
+		<br>
+		
+		<div id="gameButtons">
+		<INPUT type="submit" onclick="hitMe()" value="Hit Me">
+		<br>
+		<br>
+		<INPUT type="submit" value="Stick" onclick="stick()">
+		</div>
+		
+		<div id="afterButtons">
+		<INPUT type="submit" onclick="playGame()" value="Play Again">
+		<br>
+		<br>
+		<INPUT type="submit" value="Back" onclick="goBack()">
+		</div>
+	</div>
+	
+	<!-- <div style="text-align:center"> <font color='black' face='Arial' size='12'>
+		<script type="text/javascript" src="Blackjack.js"></script>
+	</font></div> -->
+
 	<br>
 	<br>
 	<br>
